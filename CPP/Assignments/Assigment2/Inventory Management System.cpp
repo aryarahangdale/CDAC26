@@ -1,10 +1,3 @@
-//============================================================================
-// Name        : Inventory.cpp
-// Author      : Shivam Zanjurne
-// Version     :
-// Copyright   : Your copyright notice
-// Description : Question 1 — Inventory Management System
-//============================================================================
 
 #include <iostream>
 #include <string>
