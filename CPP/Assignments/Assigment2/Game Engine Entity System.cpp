@@ -1,11 +1,3 @@
-//============================================================================
-// Name        : Game.cpp
-// Author      : Shivam Zanjurne
-// Version     :
-// Copyright   : Your copyright notice
-// Description : Question 3 — Game Engine Entity System
-//============================================================================
-
 #include <iostream>
 using namespace std;
 
