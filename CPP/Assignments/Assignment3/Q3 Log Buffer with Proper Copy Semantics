@@ -1,0 +1,148 @@
+
+
+#include <iostream>
+#include <cstring>
+#include <stdexcept>
+using namespace std;
+
+class LogBuffer{
+private:
+	char* buffer;
+	int capacity;
+	int size = 0;
+	static int instanceCount;
+	mutable int accessCount = 0;
+public:
+	// Constructor — allocates char buffer of given capacity on heap
+	LogBuffer(int capacity){
+		cout<<"[LogBuffer Created]"<<" capacity= "<<capacity<<endl;
+		this->capacity = capacity;
+		buffer = new char[capacity];
+		memset(this->buffer, 0, capacity);
+		LogBuffer::instanceCount++;
+	}
+	// Copy Constructor — must perform a DEEP copy
+	LogBuffer(const LogBuffer& other){
+		cout<<"[LogBuffer  Deep Copied]"<<" capacity= "<<other.capacity<<endl;
+		if(this == &other) return;
+
+		this->capacity = other.capacity;
+		this->size = other.size;
+		buffer = new char[capacity];
+		memset(buffer, 0, capacity);
+
+		for(int i = 0; i < size; i++){
+			this->buffer[i] = other.buffer[i];
+		}
+
+		LogBuffer::instanceCount++;
+
+	}
+	// Copy Assignment Operator — must handle self-assignment, release old memory,deep copy
+	LogBuffer& operator=(const LogBuffer& other){
+		cout<<"[LogBuffer Assigned]"<<endl;
+		if(this == &other) {
+			cout<<"[Self-assignment detected — no operation]"<<endl;
+			return *this;
+//			throw runtime_error("Same objects passed");
+		}
+		delete[] this->buffer;
+		this->size = other.size;
+		this->capacity = other.capacity;
+		this->buffer = new char[capacity];
+		memset(buffer, 0, capacity);
+
+		for(int i = 0; i < this->size; i++){
+			this->buffer[i] = other.buffer[i];
+		}
+
+		return *this;
+	}
+
+	// Destructor — frees the buffer, decrements instanceCount
+	~LogBuffer(){
+		delete[] buffer;
+		LogBuffer::instanceCount--;
+		cout<<"[LogBuffer Destroyed]"<<endl;
+	}
+	// Appends msg to buffer (up to capacity)
+	void append(const char* msg){
+		int c_size = this->size;
+		int i = this->size;
+		int i2 = 0;
+//		cout<<"curr_size: "<<c_size<<endl;
+//		cout<<"msg_size: "<<strlen(msg)<<endl;
+		if((int)strlen(msg) + c_size >= capacity){
+			cout<<"Buffer full"<<endl;
+		}
+		else{
+			for(;i2 < (int)strlen(msg); i++, i2++){
+				buffer[i] = msg[i2];
+			}
+		}
+		this->size = i;
+//		cout<<"size at the end: "<<i<<endl;
+	}
+	// Prints current buffer contents
+	void print() const{
+		this->accessCount++;
+		for(int i = 0; buffer[i] != '\0'; i++){
+			cout<<buffer[i];
+		}
+		cout<<endl;
+	}
+	// Resets size to 0
+	void clear(){
+		memset(buffer, 0, capacity);
+		this->size = 0;
+	}
+	static int getInstanceCount(){
+		return instanceCount;
+	}
+
+	int getAccessCount() const{
+		return this->accessCount;
+	}
+};
+
+int LogBuffer::instanceCount = 0;
+
+int main() {
+
+	// Objective 1 : Basic usage
+	LogBuffer log1(256);
+	log1.append("Server started on port 8080");
+	log1.append(" | Request received from 192.168.1.10");
+	log1.print();
+
+	// Objective 2 : Deep copy via copy constructor
+	 LogBuffer log2 = log1; // copy constructor
+	 log2.append(" | Cached response sent");
+	 cout << "log1 : "; log1.print(); // must NOT contain log2's append
+	 cout << "log2 : "; log2.print();
+
+	 // Objective 3 : Copy assignment operator
+	  LogBuffer log3(128);
+	  log3 = log1; // copy assignment
+	  log3.print();
+
+	  // Objective 4 : Self-assignment guard
+	   log1 = log1; // must not crash or corrupt data
+	   log1.print();
+
+	   // Objective 5 : Static member
+	    cout << "Live LogBuffer objects : " << LogBuffer::getInstanceCount() << endl;
+
+	    //Bonus Question
+	    const LogBuffer readOnly(log1); // copy construct into a const object
+	    readOnly.print();
+	    readOnly.print();
+	    readOnly.print();
+	    cout << "Times printed: " << readOnly.getAccessCount() << endl; // must print 3
+// we are making the accesscount variable inside our class a "mutable" that allows us to change it's value inside a constant function
+//too
+
+
+
+	return 0;
+}
